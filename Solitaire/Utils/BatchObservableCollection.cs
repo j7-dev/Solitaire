@@ -8,37 +8,84 @@ using System.Diagnostics;
 
 namespace Solitaire.Utils;
 
+/// <summary>
+/// 批次可觀察集合。支援延遲或禁用通知的 ObservableCollection。
+/// Batch Observable Collection. An ObservableCollection that supports delayed or disabled notifications.
+/// 用於在大量新增/移除項目時提升效能，避免每次變更都觸發通知。
+/// Used to improve performance when adding/removing many items, avoiding triggering notifications for each change.
+/// </summary>
+/// <typeparam name="T">集合中元素的類型 (Type of elements in the collection)</typeparam>
 public sealed class BatchObservableCollection<T> : Collection<T>, INotifyCollectionChanged, INotifyPropertyChanged,
     IDisposable
 {
+    /// <summary>
+    /// Count 屬性名稱常數。
+    /// Count property name constant.
+    /// </summary>
     private const string CountString = "Count";
 
+    /// <summary>
+    /// 索引器屬性名稱常數。
+    /// Indexer property name constant.
+    /// </summary>
     private const string IndexerName = "Item[]";
 
     // ReSharper disable once StaticMemberInGenericType
+    /// <summary>
+    /// 空的委派，用於初始化事件。
+    /// Empty delegate for event initialization.
+    /// </summary>
     private static readonly NotifyCollectionChangedEventHandler EmptyDelegate = delegate { };
 
+    /// <summary>
+    /// 重入監視器，防止在集合變更通知期間重入。
+    /// Reentry monitor to prevent reentrancy during collection change notifications.
+    /// </summary>
     private readonly ReentryMonitor _monitor = new();
 
+    /// <summary>
+    /// 通知資訊，用於批次處理通知。
+    /// Notification info for batching notifications.
+    /// </summary>
     private readonly NotificationInfo? _notifyInfo;
 
+    /// <summary>
+    /// 是否禁用重入。
+    /// Whether reentrancy is disabled.
+    /// </summary>
     private bool _disableReentry;
 
 
+    /// <summary>
+    /// 觸發 Count 和索引器變更的動作。
+    /// Action to fire Count and indexer changed.
+    /// </summary>
     private Action _fireCountAndIndexerChanged = delegate { };
 
 
+    /// <summary>
+    /// 觸發索引器變更的動作。
+    /// Action to fire indexer changed.
+    /// </summary>
     private Action _fireIndexerChanged = delegate { };
 
     private event PropertyChangedEventHandler? PropertyChanged;
 
     private event NotifyCollectionChangedEventHandler CollectionChanged = EmptyDelegate;
 
+    /// <summary>
+    /// 初始化批次可觀察集合的新實例。
+    /// Initializes a new instance of BatchObservableCollection.
+    /// </summary>
     public BatchObservableCollection()
     {
     }
 
 
+    /// <summary>
+    /// 私有建構函式，用於創建延遲或禁用通知的包裝器。
+    /// Private constructor for creating delayed or disabled notification wrappers.
+    /// </summary>
     private BatchObservableCollection(BatchObservableCollection<T>? parent, bool notify)
         : base(parent?.Items!)
     {
@@ -125,6 +172,11 @@ public sealed class BatchObservableCollection<T> : Collection<T>, INotifyCollect
         }
     }
 
+    /// <summary>
+    /// 新增多個項目到集合。
+    /// Adds multiple items to the collection.
+    /// </summary>
+    /// <param name="items">要新增的項目 (Items to add)</param>
     public void AddRange(IEnumerable<T> items)
     {
         foreach (var item in items)
@@ -133,16 +185,32 @@ public sealed class BatchObservableCollection<T> : Collection<T>, INotifyCollect
         }
     }
 
+    /// <summary>
+    /// 移動項目從一個索引到另一個索引。
+    /// Moves an item from one index to another.
+    /// </summary>
+    /// <param name="oldIndex">原索引 (Original index)</param>
+    /// <param name="newIndex">新索引 (New index)</param>
     public void Move(int oldIndex, int newIndex)
     {
         MoveItem(oldIndex, newIndex);
     }
 
+    /// <summary>
+    /// 創建延遲通知的包裝器。變更會被批次處理直到包裝器被釋放。
+    /// Creates a delayed notification wrapper. Changes are batched until the wrapper is disposed.
+    /// </summary>
+    /// <returns>延遲通知的包裝器 (Delayed notification wrapper)</returns>
     public BatchObservableCollection<T> DelayNotifications()
     {
         return new BatchObservableCollection<T>((null == _notifyInfo) ? this : _notifyInfo.RootCollection, true);
     }
 
+    /// <summary>
+    /// 創建禁用通知的包裝器。變更不會觸發任何通知。
+    /// Creates a disabled notification wrapper. Changes will not trigger any notifications.
+    /// </summary>
+    /// <returns>禁用通知的包裝器 (Disabled notification wrapper)</returns>
     public BatchObservableCollection<T> DisableNotifications()
     {
         return new BatchObservableCollection<T>((null == _notifyInfo) ? this : _notifyInfo.RootCollection, false);
