@@ -34,7 +34,7 @@
 
 ### 核心技術
 - **.NET SDK**: 9.0.0
-- **C# 語言版本**: latest（.NET 9.0 支援的最新版本）
+- **C# 語言版本**: 13.0（latest，.NET 9.0 支援的最新版本）
 - **目標框架**: net9.0
 - **可空性**: 啟用（`<Nullable>enable</Nullable>`）
 
@@ -284,10 +284,10 @@ public class PlayingCard : TemplatedControl
 public abstract partial class CardGameViewModel : ViewModelBase
 {
     /// <summary>
-    /// Gets the card suit.
-    /// </summary> 
-    /// <value>The card suit.</value>
-    public CardSuit Suit { get; }
+    /// Gets the game name.
+    /// </summary>
+    /// <value>The game name.</value>
+    public abstract string? GameName { get; }
     
     /// <summary>
     /// Initializes a new instance of the <see cref="CardGameViewModel"/> class.
@@ -333,6 +333,9 @@ public static async Task<CasinoViewModel> CreateOrLoadFromDisk()
     if (state is not null)
     {
         ret.SettingsInstance.ApplyState(state.Settings);
+        ret.StatisticsInstance.KlondikeStatsInstance.ApplyState(state.KlondikeStatsInstance);
+        ret.StatisticsInstance.SpiderStatsInstance.ApplyState(state.SpiderStatsInstance);
+        ret.StatisticsInstance.FreeCellStatsInstance.ApplyState(state.FreeCellStatsInstance);
     }
     return ret;
 }
@@ -462,7 +465,7 @@ Dispatcher.UIThread.InvokeAsync(async () =>
 
 ## 重要提醒
 
-1. **版本相容性優先**：始終確保代碼與檢測到的版本（.NET 9.0、Avalonia 11.3.2、C# latest）相容
+1. **版本相容性優先**：始終確保代碼與檢測到的版本（.NET 9.0、C# 13.0、Avalonia 11.3.2）相容
 2. **一致性優於最佳實務**：當有疑問時，優先考慮與現有代碼的一致性，而不是外部最佳實務或較新的語言功能
 3. **遵循 MVVM 嚴格**：維護 Model、View 和 ViewModel 之間的清晰分離
 4. **使用 CommunityToolkit.Mvvm**：利用工具包進行 MVVM 模式實作
