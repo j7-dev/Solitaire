@@ -3,10 +3,11 @@ namespace Solitaire.Models;
 
 /// <summary>
 /// The Card Types.
+/// 撲克牌類型列舉。包含所有 52 張標準撲克牌（紅心、方塊、梅花、黑桃各 13 張）。
 /// </summary>
 public enum CardType
 {
-    //  Hearts
+    //  Hearts（紅心）
     HA,
     H2,
     H3,
@@ -21,7 +22,7 @@ public enum CardType
     HQ,
     HK,
 
-    //  Diamonds
+    //  Diamonds（方塊）
     DA,
     D2,
     D3,
@@ -36,7 +37,7 @@ public enum CardType
     DQ,
     DK,
 
-    //  Clubs
+    //  Clubs（梅花）
     CA,
     C2,
     C3,
@@ -51,7 +52,7 @@ public enum CardType
     CQ,
     CK,
 
-    //  Spades
+    //  Spades（黑桃）
     SA,
     S2,
     S3,
